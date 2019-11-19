@@ -1,10 +1,10 @@
 {
-    "name": "Custom Ant Forest autoscript",
+    "name": "京豆签到",
     "main": "main.js",
     "ignore": [
         "build"
     ],
-    "packageName": "com.ant-forest-autoscript",
+    "packageName": "com.jd.beans",
     "versionName": "3.1.0",
     "versionCode": 1
 }

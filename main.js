@@ -1,4 +1,6 @@
 let { config } = require('./config.js')
+let { runningQueueDispatcher } = require('./lib/RunningQueueDispatcher.js')
+runningQueueDispatcher.addRunningTask()
 let {
   debugInfo, logInfo, infoLog, warnInfo, errorInfo, clearLogFile
 } = require('./lib/LogUtils.js')
@@ -30,3 +32,4 @@ logInfo('解锁成功')
  * 主程序
  ***********************/
 beanCollector.exec()
+runningQueueDispatcher.removeRunningTask()
