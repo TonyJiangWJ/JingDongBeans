@@ -848,9 +848,24 @@ let automator = {
 // sleep(1000)
 // automator.back()
 // sleep(1000)
+
+// let lose = widgetGetOne('.*营养液走丢了.*|.*个营养液')
+//   if (lose) {
+//     let content = lose.text() || lose.desc()
+//     let getFailed = content.match(/走丢了/)
+//     toastLog(getFailed ? '走丢了' : '得到一瓶')
+//     // countSelected += getFailed ? 0 : 1
+//   }
+// exit()
 let forces = widgetGetAll('每日上限10')
-let target = forces[0]
-toastLog('find 关注任务 ' + target.bounds())
+let target = null
+if (forces && forces.length > 1) {
+  target = forces[0]
+  toastLog('find 关注任务 ' + target.bounds())
+} else {
+  toastLog('任务识别失败')
+  exit()
+}
 automator.clickCenter(target)
 sleep(1000)
 let viewShop = widgetGetOne('每日上限4')
@@ -859,20 +874,20 @@ automator.clickCenter(viewShop)
 sleep(1500)
 let tryTime = 0
 let countSelected = 0
-while (tryTime++ <= 8 && countSelected < 4) {
+while (tryTime++ <= 10 && countSelected < 4) {
   let inShop = widgetGetOne('进店并关注')
   if (inShop) {
     toastLog('find 进店并关注' + inShop.bounds())
     automator.clickCenter(inShop)
     sleep(1000)
   }
-
-  let loss = widgetGetOne('营养液走丢了.*', 4000)
-  if (loss) {
-    toastLog(loss.bounds())
-    // let 
-  } else {
-    countSelected++
+  sleep(1500)
+  let lose = widgetGetOne('.*营养液走丢了.*|.*个营养液')
+  if (lose) {
+    let content = lose.text() || lose.desc()
+    let getFailed = content.match(/走丢了/)
+    toastLog(getFailed ? '走丢了' : '得到一瓶')
+    countSelected += getFailed ? 0 : 1
   }
   sleep(1500)
   automator.back()

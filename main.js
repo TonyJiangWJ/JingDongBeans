@@ -25,11 +25,23 @@ try {
 logInfo('---前置校验完成;启动系统--->>>>')
 
 logInfo('======解锁======')
-unlocker.exec()
+try {
+  unlocker.exec()
+} catch (e) {
+  errorInfo('解锁发生异常, 三分钟后重新开始' + e)
+  commonFunctions.setUpAutoStart(3)
+  runningQueueDispatcher.removeRunningTask()
+  exit()
+}
 logInfo('解锁成功')
 
 /************************
  * 主程序
  ***********************/
-beanCollector.exec()
-runningQueueDispatcher.removeRunningTask()
+try {
+  beanCollector.exec()
+} catch (e) {
+  errorInfo('执行发生异常' + e)
+} finally {
+  runningQueueDispatcher.removeRunningTask()
+}
