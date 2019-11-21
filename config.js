@@ -15,7 +15,8 @@ var default_config = {
  * 非可视化控制的配置 通过手动修改config.js来实现配置
  */
 let no_gui_config = {
-  saveLogFile: true
+  saveLogFile: true,
+  fuck_miui11: true
 }
 
 // UI配置

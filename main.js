@@ -34,12 +34,16 @@ try {
   exit()
 }
 logInfo('解锁成功')
-
 /************************
  * 主程序
  ***********************/
 try {
+  commonFunctions.showDialogAndWait(false)
+  if (config.fuck_miui11) {
+    commonFunctions.launchAutoJs()
+  }
   beanCollector.exec()
+  commonFunctions.reopenPackageBeforeRunning()
 } catch (e) {
   errorInfo('执行发生异常' + e)
 } finally {
