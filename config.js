@@ -1,3 +1,11 @@
+'ui';
+
+let currentEngine = engines.myEngine().getSource() + ''
+let isRunningMode = currentEngine.endsWith('/config.js')
+
+importClass(android.text.TextWatcher)
+importClass(android.view.View)
+importClass(android.view.MotionEvent)
 // 执行配置
 var default_config = {
   password: '',
@@ -5,22 +13,10 @@ var default_config = {
   show_debug_log: false,
   // 是否toast调试日志
   toast_debug_info: false,
-  // 是否在收集完成后根据收集前状态判断是否锁屏，非ROOT设备通过下拉状态栏中的锁屏按钮实现 需要配置锁屏按钮位置
-  auto_lock: true,
+  saveLogFile: true,
   timeout_existing: 6000,
   timeout_findOne: 1000,
   timeout_unlock: 1000
-}
-/**
- * 非可视化控制的配置 通过手动修改config.js来实现配置
- */
-let no_gui_config = {
-  saveLogFile: true,
-  fuck_miui11: true
-}
-
-// UI配置
-var ui_config = {
 }
 
 // 配置缓存的key值
@@ -43,16 +39,124 @@ if (!configStorage.contains('password')) {
     config[key] = storedConfigItem
   })
 }
-// UI配置直接设置到storages
-Object.keys(ui_config).forEach(key => {
-  config[key] = ui_config[key]
-})
-// 非可视化配置
-Object.keys(no_gui_config).forEach(key => {
-  config[key] = no_gui_config[key]
-})
-module.exports = {
-  config: config,
-  default_config: default_config,
-  storage_name: CONFIG_STORAGE_NAME
+
+if (!isRunningMode) {
+  module.exports = {
+    config: config,
+    default_config: default_config,
+    storage_name: CONFIG_STORAGE_NAME
+  }
+} else {
+
+  const resetUiValues = function () {
+    ui.password.text(config.password)
+    ui.showDebugLogChkBox.setChecked(config.show_debug_log)
+    ui.saveLogFileChkBox.setChecked(config.saveLogFile)
+    ui.timeoutUnlockInpt.text(config.timeout_unlock + '')
+    ui.timeoutFindOneInpt.text(config.timeout_findOne + '')
+    ui.timeoutExistingInpt.text(config.timeout_existing + '')
+  }
+
+  threads.start(function () {
+    loadingDialog = dialogs.build({
+      title: "加载中...",
+      progress: {
+        max: -1
+      },
+      cancelable: false
+    }).show()
+    setTimeout(function () {
+      loadingDialog.dismiss()
+    }, 3000)
+  })
+
+  const TextWatcherBuilder = function (textCallback) {
+    return new TextWatcher({
+      onTextChanged: (text) => {
+        textCallback(text + '')
+      },
+      beforeTextChanged: function (s) { }
+      ,
+      afterTextChanged: function (s) { }
+    })
+  }
+
+  setTimeout(function () {
+    ui.layout(
+      <drawer>
+        <vertical>
+          <appbar>
+            <toolbar id="toolbar" title="运行配置" />
+          </appbar>
+          <frame>
+            <vertical padding="24 0">
+              {/* 锁屏密码 */}
+              <horizontal gravity="center">
+                <text text="锁屏密码：" />
+                <input id="password" inputType="textPassword" layout_weight="80" />
+              </horizontal>
+              <horizontal w="*" h="1sp" bg="#cccccc" margin="5 0"></horizontal>
+              {/* 是否显示debug日志 */}
+              <checkbox id="showDebugLogChkBox" text="是否显示debug日志" />
+              <checkbox id="saveLogFileChkBox" text="是否保存日志到文件" />
+              <horizontal w="*" h="1sp" bg="#cccccc" margin="5 0"></horizontal>
+              <horizontal gravity="center">
+                <text text="解锁超时（ms）:" />
+                <input id="timeoutUnlockInpt" inputType="number" layout_weight="60" />
+              </horizontal>
+              <horizontal gravity="center">
+                <text text="查找控件超时（ms）:" />
+                <input id="timeoutFindOneInpt" inputType="number" layout_weight="60" />
+              </horizontal>
+              <horizontal gravity="center">
+                <text text="校验控件是否存在超时（ms）:" />
+                <input id="timeoutExistingInpt" inputType="number" layout_weight="60" />
+              </horizontal>
+            </vertical>
+          </frame>
+        </vertical>
+      </drawer>
+    )
+    resetUiValues()
+    ui.password.addTextChangedListener(
+      TextWatcherBuilder(text => { config.password = text + '' })
+    )
+
+    ui.showDebugLogChkBox.on('click', () => {
+      config.show_debug_log = ui.showDebugLogChkBox.isChecked()
+    })
+
+    ui.saveLogFileChkBox.on('click', () => {
+      config.saveLogFile = ui.saveLogFileChkBox.isChecked()
+    })
+
+
+    ui.timeoutUnlockInpt.addTextChangedListener(
+      TextWatcherBuilder(text => { config.timeout_unlock = parseInt(text) })
+    )
+
+    ui.timeoutFindOneInpt.addTextChangedListener(
+      TextWatcherBuilder(text => { config.timeout_findOne = parseInt(text) })
+    )
+
+    ui.timeoutExistingInpt.addTextChangedListener(
+      TextWatcherBuilder(text => { config.timeout_existing = parseInt(text) })
+    )
+
+    setTimeout(() => {
+      loadingDialog.dismiss()
+    }, 500)
+  }, 400)
+
+  ui.emitter.on('pause', () => {
+    Object.keys(default_config).forEach(key => {
+      let newVal = config[key]
+      if (typeof newVal !== 'undefined') {
+        configStorage.put(key, newVal)
+      } else {
+        configStorage.put(key, default_config[key])
+      }
+    })
+    log('修改后配置信息：' + JSON.stringify(config))
+  })
 }

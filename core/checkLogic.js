@@ -859,14 +859,14 @@ let automator = {
 // exit()
 let forces = widgetGetAll('每日上限10')
 let target = null
-if (forces && forces.length > 1) {
-  target = forces[0]
-  toastLog('find 关注任务 ' + target.bounds())
-} else {
-  toastLog('任务识别失败')
-  exit()
-}
-automator.clickCenter(target)
+// if (forces && forces.length > 1) {
+//   target = forces[0]
+//   toastLog('find 关注任务 ' + target.bounds())
+// } else {
+//   toastLog('任务识别失败')
+//   exit()
+// }
+automator.click(425, 1915)
 sleep(1000)
 let viewShop = widgetGetOne('每日上限4')
 toastLog('find 每日上限4' + viewShop.bounds())

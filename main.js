@@ -1,3 +1,10 @@
+/*
+ * @Author: TonyJiangWJ
+ * @Date: 2019-09-25 16:47:02
+ * @Last Modified by: TonyJiangWJ
+ * @Last Modified time: 2020-04-24 08:04:50
+ * @Description: 
+ */
 let { config } = require('./config.js')
 let { runningQueueDispatcher } = require('./lib/RunningQueueDispatcher.js')
 runningQueueDispatcher.addRunningTask()
@@ -7,9 +14,7 @@ let {
 let { commonFunctions } = require('./lib/CommonFunction.js')
 let { unlocker } = require('./lib/Unlock.js')
 let { beanCollector } = require('./core/BeanCollector.js')
-logInfo('======校验是否重复运行=======')
-// 检查脚本是否重复运行
-commonFunctions.checkDuplicateRunning()
+let { automator } = require('../lib/Automator.js')
 
 /***********************
  * 初始化
@@ -39,11 +44,11 @@ logInfo('解锁成功')
  ***********************/
 try {
   commonFunctions.showDialogAndWait(false)
-  if (config.fuck_miui11) {
-    commonFunctions.launchAutoJs()
-  }
   beanCollector.exec()
-  commonFunctions.reopenPackageBeforeRunning()
+  if (config.auto_lock === true && unlocker.needRelock() === true) {
+    debugInfo('重新锁定屏幕')
+    automator.lockScreen()
+  }
 } catch (e) {
   errorInfo('执行发生异常' + e)
 } finally {
