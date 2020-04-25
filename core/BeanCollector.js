@@ -23,9 +23,9 @@ function BeanCollector () {
     }
   }
 
-  const waitingAndGet = function (val, t) {
+  const waitingAndGet = function (val, t, containType) {
     WidgetUtils.widgetWaiting(val, null, t)
-    return WidgetUtils.widgetGetOne(val, t)
+    return WidgetUtils.widgetGetOne(val, t, containType)
   }
 
   /**
@@ -59,7 +59,7 @@ function BeanCollector () {
       startApp()
       let mine = waitingAndGet('我的')
       if (mine === null) {
-        commonFunctions.getAndUpdateSprintBoard('open-failed')
+        commonFunctions.getAndUpdateDismissReason('open-failed')
         commonFunctions.killCurrentApp()
         commonFunctions.setUpAutoStart(0.06)
         return
@@ -75,9 +75,11 @@ function BeanCollector () {
       sleep(2000)
       infoLog('点击收集能量包', true)
       automator.click(210, 1200)
-      let countdown = waitingAndGet('剩\\d{2}:\\d{2}:\\d{2}')
+      let countdown = waitingAndGet('剩\\d{2}:\\d{2}:\\d{2}', null, true)
+      let countdownInfo = null
       if (countdown !== null) {
-        let countdownInfo = countdown.text()
+        countdownInfo = countdown.isDesc ? countdown.target.desc() : countdown.target.text()
+        debugInfo('获取倒计时信息：' + countdownInfo)
         let regex = /剩(\d{2}):(\d{2}):(\d{2})/
         if (regex.test(countdownInfo)) {
           let result = regex.exec(countdownInfo)
@@ -89,11 +91,13 @@ function BeanCollector () {
             remainTime = remainTime === 0 ? 60 : remainTime
           }
           commonFunctions.setUpAutoStart(remainTime)
+        } else {
+          warnInfo('倒计时信息不符合规则，无法提取时间：' + countdownInfo)
         }
       }
       let feed = waitingAndGet('培养')
       automator.clickCenter(feed)
-      infoLog('完成！' + (countdown != null ? countdown.text() : ''), true)
+      infoLog('完成！' + (countdownInfo != null ? countdownInfo : ''), true)
       commonFunctions.killCurrentApp()
       home()
       device.setBrightnessMode(1)

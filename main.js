@@ -2,7 +2,7 @@
  * @Author: TonyJiangWJ
  * @Date: 2019-09-25 16:47:02
  * @Last Modified by: TonyJiangWJ
- * @Last Modified time: 2020-04-24 08:04:50
+ * @Last Modified time: 2020-04-25 11:29:53
  * @Description: 
  */
 let { config } = require('./config.js')
@@ -14,18 +14,20 @@ let {
 let { commonFunctions } = require('./lib/CommonFunction.js')
 let { unlocker } = require('./lib/Unlock.js')
 let { beanCollector } = require('./core/BeanCollector.js')
-let { automator } = require('../lib/Automator.js')
+let { automator } = require('./lib/Automator.js')
 
 /***********************
  * 初始化
  ***********************/
 logInfo('======校验无障碍功能======')
 // 检查手机是否开启无障碍服务
-try {
-  auto.waitFor()
-} catch (e) {
-  warnInfo('auto.waitFor()不可用')
-  auto()
+if (!commonFunctions.checkAccessibilityService()) {
+  try {
+    auto.waitFor()
+  } catch (e) {
+    warnInfo('auto.waitFor()不可用')
+    auto()
+  }
 }
 logInfo('---前置校验完成;启动系统--->>>>')
 
@@ -43,9 +45,10 @@ logInfo('解锁成功')
  * 主程序
  ***********************/
 try {
-  commonFunctions.showDialogAndWait(false)
+  commonFunctions.showDialogAndWait(true)
   beanCollector.exec()
   if (config.auto_lock === true && unlocker.needRelock() === true) {
+    sleep(500)
     debugInfo('重新锁定屏幕')
     automator.lockScreen()
   }

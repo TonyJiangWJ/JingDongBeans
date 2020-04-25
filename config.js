@@ -16,7 +16,12 @@ var default_config = {
   saveLogFile: true,
   timeout_existing: 6000,
   timeout_findOne: 1000,
-  timeout_unlock: 1000
+  timeout_unlock: 1000,
+  device_width: device.width,
+  device_height: device.height,
+  auto_lock: false,
+  lock_x: 150,
+  lock_y: 970
 }
 
 // 配置缓存的key值
@@ -47,7 +52,7 @@ if (!isRunningMode) {
     storage_name: CONFIG_STORAGE_NAME
   }
 } else {
-
+  const _hasRootPermission = files.exists("/sbin/su") || files.exists("/system/xbin/su") || files.exists("/system/bin/su")
   const resetUiValues = function () {
     ui.password.text(config.password)
     ui.showDebugLogChkBox.setChecked(config.show_debug_log)
@@ -55,6 +60,14 @@ if (!isRunningMode) {
     ui.timeoutUnlockInpt.text(config.timeout_unlock + '')
     ui.timeoutFindOneInpt.text(config.timeout_findOne + '')
     ui.timeoutExistingInpt.text(config.timeout_existing + '')
+
+    ui.lockX.text(config.lock_x + '')
+    ui.lockXSeekBar.setProgress(parseInt(config.lock_x / config.device_width * 100))
+    ui.lockY.text(config.lock_y + '')
+    ui.lockYSeekBar.setProgress(parseInt(config.lock_y / config.device_height * 100))
+    ui.autoLockChkBox.setChecked(config.auto_lock)
+    ui.lockPositionContainer.setVisibility(config.auto_lock && !_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
+    ui.lockDescNoRoot.setVisibility(!_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
   }
 
   threads.start(function () {
@@ -111,6 +124,27 @@ if (!isRunningMode) {
               <horizontal gravity="center">
                 <text text="校验控件是否存在超时（ms）:" />
                 <input id="timeoutExistingInpt" inputType="number" layout_weight="60" />
+              </horizontal><horizontal w="*" h="1sp" bg="#cccccc" margin="5 0"></horizontal>
+              {/* 自动锁屏 */}
+              <vertical id="lockDescNoRoot">
+                <text text="锁屏功能仅限于下拉状态栏中有锁屏按钮的情况下可用" textSize="12sp" />
+                <text text="实在想用可以自行修改Automator中的lockScreen方法" textSize="12sp" />
+              </vertical>
+              <horizontal gravity="center">
+                <checkbox id="autoLockChkBox" text="是否自动锁屏" />
+                <vertical padding="10 0" id="lockPositionContainer" gravity="center" layout_weight="75">
+                  <horizontal margin="10 0" gravity="center">
+                    <text text="x:" />
+                    <seekbar id="lockXSeekBar" progress="20" layout_weight="80" />
+                    <text id="lockX" />
+                  </horizontal>
+                  <horizontal margin="10 0" gravity="center">
+                    <text text="y:" />
+                    <seekbar id="lockYSeekBar" progress="20" layout_weight="80" />
+                    <text id="lockY" />
+                  </horizontal>
+                  <button id="showLockPointConfig" >手动输入坐标</button>
+                </vertical>
               </horizontal>
             </vertical>
           </frame>
@@ -142,6 +176,57 @@ if (!isRunningMode) {
     ui.timeoutExistingInpt.addTextChangedListener(
       TextWatcherBuilder(text => { config.timeout_existing = parseInt(text) })
     )
+
+    ui.autoLockChkBox.on('click', () => {
+      let checked = ui.autoLockChkBox.isChecked()
+      config.auto_lock = checked
+      ui.lockPositionContainer.setVisibility(checked && !_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
+    })
+
+    ui.lockXSeekBar.on('touch', () => {
+      let precent = ui.lockXSeekBar.getProgress()
+      let trueVal = parseInt(precent * config.device_width / 100)
+      ui.lockX.text('' + trueVal)
+      config.lock_x = trueVal
+    })
+
+    ui.lockYSeekBar.on('touch', () => {
+      let precent = ui.lockYSeekBar.getProgress()
+      let trueVal = parseInt(precent * config.device_height / 100)
+      ui.lockY.text('' + trueVal)
+      config.lock_y = trueVal
+    })
+
+    ui.showLockPointConfig.on('click', () => {
+      Promise.resolve().then(() => {
+        return dialogs.rawInput('请输入X坐标：', config.lock_x + '')
+      }).then(x => {
+        if (x) {
+          let xVal = parseInt(x)
+          if (isFinite(xVal)) {
+            config.lock_x = xVal
+          } else {
+            toast('输入值无效')
+          }
+        }
+      }).then(() => {
+        return dialogs.rawInput('请输入Y坐标：', config.lock_y + '')
+      }).then(y => {
+        if (y) {
+          let yVal = parseInt(y)
+          if (isFinite(yVal)) {
+            config.lock_y = yVal
+          } else {
+            toast('输入值无效')
+          }
+        }
+      }).then(() => {
+        ui.lockX.text(config.lock_x + '')
+        ui.lockXSeekBar.setProgress(parseInt(config.lock_x / config.device_width * 100))
+        ui.lockY.text(config.lock_y + '')
+        ui.lockYSeekBar.setProgress(parseInt(config.lock_y / config.device_height * 100))
+      })
+    })
 
     setTimeout(() => {
       loadingDialog.dismiss()
