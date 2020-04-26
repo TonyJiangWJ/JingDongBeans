@@ -5,8 +5,10 @@
 - [蚂蚁森林脚本传送门](https://github.com/TonyJiangWJ/Ant-Forest)
 - [蚂蚁庄园脚本传送门](https://github.com/TonyJiangWJ/Ant-Manor)
 - [支付宝会员积分传送门](https://github.com/TonyJiangWJ/Alipay-Credits)
+- 拆分出来了基础项目，用于快速开发AutoJS脚本[AutoScriptBase](https://github.com/TonyJiangWJ/AutoScriptBase)
 
 ## 基于AutoJS实现的自动领京豆脚本
+
 - 每日领取京豆并定时种豆浇水
 
 ## 使用说明
