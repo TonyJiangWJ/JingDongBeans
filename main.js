@@ -2,19 +2,21 @@
  * @Author: TonyJiangWJ
  * @Date: 2019-09-25 16:47:02
  * @Last Modified by: TonyJiangWJ
- * @Last Modified time: 2020-04-25 11:29:53
+ * @Last Modified time: 2020-04-26 18:27:17
  * @Description: 
  */
-let { config } = require('./config.js')
-let { runningQueueDispatcher } = require('./lib/RunningQueueDispatcher.js')
+let { config } = require('./config.js')(runtime, this)
+let singletoneRequire = require('./lib/SingletonRequirer.js')(runtime, this)
+let runningQueueDispatcher = singletoneRequire('RunningQueueDispatcher')
+let { logInfo, errorInfo, warnInfo, debugInfo, infoLog } = singletoneRequire('LogUtils')
+let commonFunctions = singletoneRequire('CommonFunction')
+let automator = singletoneRequire('Automator')
+
+let unlocker = require('./lib/Unlock.js')
+
+let beanCollector = require('./core/BeanCollector.js')
 runningQueueDispatcher.addRunningTask()
-let {
-  debugInfo, logInfo, infoLog, warnInfo, errorInfo, clearLogFile
-} = require('./lib/LogUtils.js')
-let { commonFunctions } = require('./lib/CommonFunction.js')
-let { unlocker } = require('./lib/Unlock.js')
-let { beanCollector } = require('./core/BeanCollector.js')
-let { automator } = require('./lib/Automator.js')
+
 
 /***********************
  * 初始化
@@ -46,6 +48,7 @@ logInfo('解锁成功')
  ***********************/
 try {
   commonFunctions.showDialogAndWait(true)
+  commonFunctions.listenDelayStart()
   beanCollector.exec()
   if (config.auto_lock === true && unlocker.needRelock() === true) {
     sleep(500)
@@ -53,7 +56,11 @@ try {
     automator.lockScreen()
   }
 } catch (e) {
-  errorInfo('执行发生异常' + e)
+  errorInfo('执行发生异常' + e + ' 三分钟后重启')
+  commonFunctions.setUpAutoStart(3)
 } finally {
+  events.removeAllListeners()
+  events.recycle()
   runningQueueDispatcher.removeRunningTask()
 }
+exit()

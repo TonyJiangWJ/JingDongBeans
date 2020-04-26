@@ -1,7 +1,7 @@
 'ui';
 
 let currentEngine = engines.myEngine().getSource() + ''
-let isRunningMode = currentEngine.endsWith('/config.js')
+let isRunningMode = currentEngine.endsWith('/config.js') && typeof module === 'undefined'
 
 importClass(android.text.TextWatcher)
 importClass(android.view.View)
@@ -21,11 +21,17 @@ var default_config = {
   device_height: device.height,
   auto_lock: false,
   lock_x: 150,
-  lock_y: 970
+  lock_y: 970,
+  // 单脚本模式 是否只运行一个脚本 不会同时使用其他的 开启单脚本模式 会取消任务队列的功能。
+  // 比如同时使用蚂蚁庄园 则保持默认 false 否则设置为true 无视其他运行中的脚本
+  single_script: false,
+  // 延迟启动时延 5秒 悬浮窗中进行的倒计时时间
+  delayStartTime: 5,
 }
 
 // 配置缓存的key值
 const CONFIG_STORAGE_NAME = 'jd_config_bean_version'
+const PROJECT_NAME = '京东签到'
 var configStorage = storages.create(CONFIG_STORAGE_NAME)
 var config = {}
 if (!configStorage.contains('password')) {
@@ -46,11 +52,18 @@ if (!configStorage.contains('password')) {
 }
 
 if (!isRunningMode) {
-  module.exports = {
-    config: config,
-    default_config: default_config,
-    storage_name: CONFIG_STORAGE_NAME
+  module.exports = function (__runtime__, scope) {
+    if (typeof scope.config_instance === 'undefined') {
+      scope.config_instance = {
+        config: config,
+        default_config: default_config,
+        storage_name: CONFIG_STORAGE_NAME,
+        project_name: PROJECT_NAME
+      }
+    }
+    return scope.config_instance
   }
+
 } else {
   const _hasRootPermission = files.exists("/sbin/su") || files.exists("/system/xbin/su") || files.exists("/system/bin/su")
   const resetUiValues = function () {
@@ -68,6 +81,9 @@ if (!isRunningMode) {
     ui.autoLockChkBox.setChecked(config.auto_lock)
     ui.lockPositionContainer.setVisibility(config.auto_lock && !_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
     ui.lockDescNoRoot.setVisibility(!_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
+    ui.delayStartTimeInpt.text(config.delayStartTime + '')
+    // 进阶配置
+    ui.singleScriptChkBox.setChecked(config.single_script)
   }
 
   threads.start(function () {
@@ -145,6 +161,14 @@ if (!isRunningMode) {
                   </horizontal>
                   <button id="showLockPointConfig" >手动输入坐标</button>
                 </vertical>
+              </horizontal>
+              {/* 单脚本使用，无视多任务队列 */}
+              <text text="当需要使用多个脚本时不要勾选（如同时使用我写的蚂蚁庄园脚本），避免抢占前台" textSize="9sp" />
+              <checkbox id="singleScriptChkBox" text="是否单脚本运行" />
+              {/* 脚本延迟启动 */}
+              <horizontal gravity="center">
+                <text text="延迟启动时间（秒）:" />
+                <input layout_weight="70" inputType="number" id="delayStartTimeInpt" layout_weight="70" />
               </horizontal>
             </vertical>
           </frame>
@@ -227,7 +251,15 @@ if (!isRunningMode) {
         ui.lockYSeekBar.setProgress(parseInt(config.lock_y / config.device_height * 100))
       })
     })
+    
 
+    ui.singleScriptChkBox.on('click', () => {
+      config.single_script = ui.singleScriptChkBox.isChecked()
+    })
+
+    ui.delayStartTimeInpt.addTextChangedListener(
+      TextWatcherBuilder(text => { config.delayStartTime = parseInt(text) })
+    )
     setTimeout(() => {
       loadingDialog.dismiss()
     }, 500)
