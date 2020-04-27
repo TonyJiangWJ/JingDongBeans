@@ -1,10 +1,3 @@
-<!--
- * @Author: TonyJiangWJ
- * @Date: 2020-04-26 20:16:23
- * @Last Modified by: TonyJiangWJ
- * @Last Modified time: 2020-04-28 00:06:14
- * @Description: 
- -->
 # 京东京豆自动领取
 
 ## 其他脚本
@@ -17,6 +10,7 @@
 ## 基于AutoJS实现的自动领京豆脚本
 
 - 每日领取京豆并定时种豆浇水
+- 每日任务自动执行功能,在种豆页面执行RunDailyTask.js即可 目前点击坐标是写死的
 
 ## 使用说明
 
