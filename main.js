@@ -46,21 +46,33 @@ logInfo('解锁成功')
 /************************
  * 主程序
  ***********************/
-try {
+function mainExec() {
   commonFunctions.showDialogAndWait(true)
   commonFunctions.listenDelayStart()
   beanCollector.exec()
-  if (config.auto_lock === true && unlocker.needRelock() === true) {
-    sleep(500)
-    debugInfo('重新锁定屏幕')
-    automator.lockScreen()
-  }
-} catch (e) {
-  errorInfo('执行发生异常' + e + ' 三分钟后重启')
-  commonFunctions.setUpAutoStart(3)
-} finally {
-  events.removeAllListeners()
-  events.recycle()
-  runningQueueDispatcher.removeRunningTask()
 }
+
+ if (config.develop_mode) {
+  mainExec()
+} else {
+ 
+  try {
+    mainExec()
+  
+  } catch (e) {
+    errorInfo('执行发生异常' + e + ' 三分钟后重启')
+    commonFunctions.setUpAutoStart(3)
+  }
+}
+
+if (config.auto_lock === true && unlocker.needRelock() === true) {
+  sleep(500)
+  debugInfo('重新锁定屏幕')
+  automator.lockScreen()
+}
+// 清理资源
+events.removeAllListeners()
+events.recycle()
+runningQueueDispatcher.removeRunningTask()
+
 exit()

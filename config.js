@@ -9,11 +9,6 @@ importClass(android.view.MotionEvent)
 // 执行配置
 var default_config = {
   password: '',
-  // 是否显示调试日志信息
-  show_debug_log: false,
-  // 是否toast调试日志
-  toast_debug_info: false,
-  saveLogFile: true,
   timeout_existing: 6000,
   timeout_findOne: 1000,
   timeout_unlock: 1000,
@@ -22,6 +17,16 @@ var default_config = {
   auto_lock: false,
   lock_x: 150,
   lock_y: 970,
+  // 是否显示调试日志信息
+  show_debug_log: false,
+  // 是否toast调试日志
+  toast_debug_info: false,
+  show_engine_id: false,
+  develop_mode: false,
+  saveLogFile: true,
+  // 是否保存日志文件，如果设置为保存，则日志文件会按时间分片备份在logback/文件夹下
+  saveLogFile: true,
+  back_size: '100',
   // 单脚本模式 是否只运行一个脚本 不会同时使用其他的 开启单脚本模式 会取消任务队列的功能。
   // 比如同时使用蚂蚁庄园 则保持默认 false 否则设置为true 无视其他运行中的脚本
   single_script: false,
@@ -30,8 +35,8 @@ var default_config = {
 }
 
 // 配置缓存的key值
-const CONFIG_STORAGE_NAME = 'jd_config_bean_version'
-const PROJECT_NAME = '京东签到'
+let CONFIG_STORAGE_NAME = 'jd_config_bean_version'
+let PROJECT_NAME = '京东签到'
 var configStorage = storages.create(CONFIG_STORAGE_NAME)
 var config = {}
 if (!configStorage.contains('password')) {
@@ -65,14 +70,15 @@ if (!isRunningMode) {
   }
 
 } else {
-  const _hasRootPermission = files.exists("/sbin/su") || files.exists("/system/xbin/su") || files.exists("/system/bin/su")
-  const resetUiValues = function () {
-    ui.password.text(config.password)
+  let _hasRootPermission = files.exists("/sbin/su") || files.exists("/system/xbin/su") || files.exists("/system/bin/su")
+  let resetUiValues = function () {
+    ui.password.text(config.password + '')
     ui.showDebugLogChkBox.setChecked(config.show_debug_log)
     ui.saveLogFileChkBox.setChecked(config.saveLogFile)
-    ui.timeoutUnlockInpt.text(config.timeout_unlock + '')
-    ui.timeoutFindOneInpt.text(config.timeout_findOne + '')
-    ui.timeoutExistingInpt.text(config.timeout_existing + '')
+    ui.showEngineIdChkBox.setChecked(config.show_engine_id)
+    ui.developModeChkBox.setChecked(config.develop_mode)
+    ui.fileSizeInpt.text(config.back_size + '')
+    ui.fileSizeContainer.setVisibility(config.saveLogFile ? View.VISIBLE : View.INVISIBLE)
 
     ui.lockX.text(config.lock_x + '')
     ui.lockXSeekBar.setProgress(parseInt(config.lock_x / config.device_width * 100))
@@ -81,6 +87,10 @@ if (!isRunningMode) {
     ui.autoLockChkBox.setChecked(config.auto_lock)
     ui.lockPositionContainer.setVisibility(config.auto_lock && !_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
     ui.lockDescNoRoot.setVisibility(!_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
+
+    ui.timeoutUnlockInpt.text(config.timeout_unlock + '')
+    ui.timeoutFindOneInpt.text(config.timeout_findOne + '')
+    ui.timeoutExistingInpt.text(config.timeout_existing + '')
     ui.delayStartTimeInpt.text(config.delayStartTime + '')
     // 进阶配置
     ui.singleScriptChkBox.setChecked(config.single_script)
@@ -99,7 +109,7 @@ if (!isRunningMode) {
     }, 3000)
   })
 
-  const TextWatcherBuilder = function (textCallback) {
+  let TextWatcherBuilder = function (textCallback) {
     return new TextWatcher({
       onTextChanged: (text) => {
         textCallback(text + '')
@@ -127,7 +137,16 @@ if (!isRunningMode) {
               <horizontal w="*" h="1sp" bg="#cccccc" margin="5 0"></horizontal>
               {/* 是否显示debug日志 */}
               <checkbox id="showDebugLogChkBox" text="是否显示debug日志" />
-              <checkbox id="saveLogFileChkBox" text="是否保存日志到文件" />
+              <checkbox id="showEngineIdChkBox" text="是否在控制台中显示脚本引擎id" />
+              <checkbox id="developModeChkBox" text="是否启用开发模式" />
+              <horizontal gravity="center">
+                <checkbox id="saveLogFileChkBox" text="是否保存日志到文件" />
+                <horizontal padding="10 0" id="fileSizeContainer" gravity="center" layout_weight="75">
+                  <text text="文件滚动大小：" layout_weight="20" />
+                  <input id="fileSizeInpt" textSize="14sp" layout_weight="80" />
+                  <text text="kb" />
+                </horizontal>
+              </horizontal>
               <horizontal w="*" h="1sp" bg="#cccccc" margin="5 0"></horizontal>
               <horizontal gravity="center">
                 <text text="解锁超时（ms）:" />
@@ -184,8 +203,16 @@ if (!isRunningMode) {
       config.show_debug_log = ui.showDebugLogChkBox.isChecked()
     })
 
+    ui.showEngineIdChkBox.on('click', () => {
+      config.show_engine_id = ui.showEngineIdChkBox.isChecked()
+    })
+
+    ui.developModeChkBox.on('click', () => {
+      config.develop_mode = ui.developModeChkBox.isChecked()
+    })
     ui.saveLogFileChkBox.on('click', () => {
       config.saveLogFile = ui.saveLogFileChkBox.isChecked()
+      ui.fileSizeContainer.setVisibility(config.saveLogFile ? View.VISIBLE : View.INVISIBLE)
     })
 
 
@@ -252,6 +279,10 @@ if (!isRunningMode) {
       })
     })
     
+
+    ui.fileSizeInpt.addTextChangedListener(
+      TextWatcherBuilder(text => { config.back_size = parseInt(text) })
+    )
 
     ui.singleScriptChkBox.on('click', () => {
       config.single_script = ui.singleScriptChkBox.isChecked()
