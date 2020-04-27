@@ -1,3 +1,10 @@
+<!--
+ * @Author: TonyJiangWJ
+ * @Date: 2020-04-26 20:16:23
+ * @Last Modified by: TonyJiangWJ
+ * @Last Modified time: 2020-04-28 00:06:14
+ * @Description: 
+ -->
 # 京东京豆自动领取
 
 ## 其他脚本
@@ -39,4 +46,21 @@ module.exports = function (obj) {
   }
 
 }
+```
+
+## 添加自定义锁屏代码
+
+- 同解锁设备，在extends文件夹下创建LockScreen.js，内容可以参考LockScreen-demo.js 实现自定义解锁
+
+```javascript
+  let { config: _config } = require('../config.js')(runtime, this)
+
+  module.exports = function () {
+    // MIUI 12 偏右上角下拉新控制中心
+    swipe(800, 10, 800, 1000, 500)
+    // 等待动画执行完毕
+    sleep(500)
+    // 点击锁屏按钮
+    click(parseInt(_config.lock_x), parseInt(_config.lock_y))
+  }
 ```
