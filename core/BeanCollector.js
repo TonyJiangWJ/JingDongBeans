@@ -1,10 +1,10 @@
 
 let { config } = require('../config.js')(runtime, this)
-let singletoneRequire = require('../lib/SingletonRequirer.js')(runtime, this)
+let singletonRequire = require('../lib/SingletonRequirer.js')(runtime, this)
 
-let WidgetUtils = singletoneRequire('WidgetUtils')
-let automator = singletoneRequire('Automator')
-let commonFunctions = singletoneRequire('CommonFunction')
+let WidgetUtils = singletonRequire('WidgetUtils')
+let automator = singletonRequire('Automator')
+let commonFunctions = singletonRequire('CommonFunction')
 
 function BeanCollector () {
   const _package_name = 'com.jingdong.app.mall'
