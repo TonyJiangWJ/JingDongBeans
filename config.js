@@ -16,7 +16,9 @@ var default_config = {
   device_height: device.height,
   auto_lock: false,
   lock_x: 150,
-  lock_y: 970,
+  lock_y: 970,  
+  // 锁屏启动关闭提示框
+  dismissDialogIfLocked: true,
   // 是否显示调试日志信息
   show_debug_log: false,
   // 是否toast调试日志
@@ -87,6 +89,8 @@ if (!isRunningMode) {
     ui.autoLockChkBox.setChecked(config.auto_lock)
     ui.lockPositionContainer.setVisibility(config.auto_lock && !_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
     ui.lockDescNoRoot.setVisibility(!_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
+
+    ui.dismissDialogIfLockedChkBox.setChecked(config.dismissDialogIfLocked)
 
     ui.timeoutUnlockInpt.text(config.timeout_unlock + '')
     ui.timeoutFindOneInpt.text(config.timeout_findOne + '')
@@ -181,6 +185,8 @@ if (!isRunningMode) {
                   <button id="showLockPointConfig" >手动输入坐标</button>
                 </vertical>
               </horizontal>
+              {/* 是否锁屏启动关闭弹框提示 */}
+              <checkbox id="dismissDialogIfLockedChkBox" text="锁屏启动关闭弹框提示" />
               {/* 单脚本使用，无视多任务队列 */}
               <text text="当需要使用多个脚本时不要勾选（如同时使用我写的蚂蚁庄园脚本），避免抢占前台" textSize="9sp" />
               <checkbox id="singleScriptChkBox" text="是否单脚本运行" />
@@ -215,6 +221,9 @@ if (!isRunningMode) {
       ui.fileSizeContainer.setVisibility(config.saveLogFile ? View.VISIBLE : View.INVISIBLE)
     })
 
+    ui.dismissDialogIfLockedChkBox.on('click', () => {
+      config.dismissDialogIfLocked = ui.dismissDialogIfLockedChkBox.isChecked()
+    })
 
     ui.timeoutUnlockInpt.addTextChangedListener(
       TextWatcherBuilder(text => { config.timeout_unlock = parseInt(text) })
