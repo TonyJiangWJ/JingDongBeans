@@ -18,7 +18,7 @@ var default_config = {
   lock_x: 150,
   lock_y: 970,  
   // 锁屏启动关闭提示框
-  dismissDialogIfLocked: true,
+  dismiss_dialog_if_locked: true,
   // 是否显示调试日志信息
   show_debug_log: false,
   // 是否toast调试日志
@@ -90,7 +90,7 @@ if (!isRunningMode) {
     ui.lockPositionContainer.setVisibility(config.auto_lock && !_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
     ui.lockDescNoRoot.setVisibility(!_hasRootPermission ? View.VISIBLE : View.INVISIBLE)
 
-    ui.dismissDialogIfLockedChkBox.setChecked(config.dismissDialogIfLocked)
+    ui.dismissDialogIfLockedChkBox.setChecked(config.dismiss_dialog_if_locked)
 
     ui.timeoutUnlockInpt.text(config.timeout_unlock + '')
     ui.timeoutFindOneInpt.text(config.timeout_findOne + '')
@@ -222,7 +222,7 @@ if (!isRunningMode) {
     })
 
     ui.dismissDialogIfLockedChkBox.on('click', () => {
-      config.dismissDialogIfLocked = ui.dismissDialogIfLockedChkBox.isChecked()
+      config.dismiss_dialog_if_locked = ui.dismissDialogIfLockedChkBox.isChecked()
     })
 
     ui.timeoutUnlockInpt.addTextChangedListener(
