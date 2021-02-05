@@ -5,13 +5,15 @@
  * @Last Modified time: 2020-05-06 01:07:18
  * @Description: 
  -->
-# 京东京豆自动领取
+# 京东京豆自动领取 此项目已废弃，不再开发 签到已经整合到了聚合签到中
+
+- [聚合签到脚本传送门](https://github.com/TonyJiangWJ/Unify-Sign)
 
 ## 其他脚本
 
 - [蚂蚁森林脚本传送门](https://github.com/TonyJiangWJ/Ant-Forest)
 - [蚂蚁庄园脚本传送门](https://github.com/TonyJiangWJ/Ant-Manor)
-- [支付宝会员积分传送门](https://github.com/TonyJiangWJ/Alipay-Credits)
+- [聚合签到脚本传送门](https://github.com/TonyJiangWJ/Unify-Sign)
 - 拆分出来了基础项目，用于快速开发AutoJS脚本[AutoScriptBase](https://github.com/TonyJiangWJ/AutoScriptBase)
 
 ## 基于AutoJS实现的自动领京豆脚本
